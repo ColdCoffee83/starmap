@@ -1,0 +1,13 @@
+# SQLite database (regenerate with `python seed_data.py`, or import your own)
+starmap.db
+*.db-journal
+*.db-wal
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs / scratch
+*.log

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Star Map</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="app">
+  <div id="map-container">
+    <canvas id="map"></canvas>
+    <div id="map-overlay">
+      <div class="overlay-row">
+        Scale:
+        <input type="range" id="scale-slider" min="30" max="500" value="150">
+        <span id="scale-value">150</span> px/ly
+      </div>
+      <div class="overlay-row">
+        <button id="center-ship-btn">Center on ship</button>
+      </div>
+      <div class="overlay-hint">Click: select &nbsp;|&nbsp; Right-click: full info &nbsp;|&nbsp; Arrows / drag: pan</div>
+    </div>
+  </div>
+
+  <div id="sidebar">
+
+    <section class="panel">
+      <h2>Ship</h2>
+      <div class="ship-coords">
+        X: <span id="ship-x">0</span> &nbsp;
+        Y: <span id="ship-y">0</span> &nbsp;
+        Z: <span id="ship-z">0</span> ly
+      </div>
+      <div class="inline-form">
+        <input type="number" id="ship-x-input" step="0.1" placeholder="X">
+        <input type="number" id="ship-y-input" step="0.1" placeholder="Y">
+        <input type="number" id="ship-z-input" step="0.1" placeholder="Z">
+        <button id="save-ship-btn">Move ship</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Distance</h2>
+      <div class="inline-form">
+        From:
+        <input type="number" id="dist-from-x" step="0.1">
+        <input type="number" id="dist-from-y" step="0.1">
+        <input type="number" id="dist-from-z" step="0.1">
+        <button id="dist-use-ship">Use ship</button>
+      </div>
+      <div class="inline-form">
+        To:
+        <input type="number" id="dist-to-x" step="0.1">
+        <input type="number" id="dist-to-y" step="0.1">
+        <input type="number" id="dist-to-z" step="0.1">
+        <button id="dist-use-selected">Use selected</button>
+      </div>
+      <div class="dist-result">
+        Distance: <span id="dist-result">—</span> ly
+        <span id="jump-status"></span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>GM</h2>
+      <div class="inline-form">
+        <input type="password" id="gm-password-input" placeholder="GM password">
+        <button id="set-password-btn">Set</button>
+      </div>
+      <div id="auth-status" class="muted small">Editing: open</div>
+      <div class="inline-form" style="margin-top:6px;">
+        <button id="new-system-btn">+ New system at ship</button>
+      </div>
+    </section>
+
+    <section class="panel" id="detail-panel">
+      <h2 id="detail-title">Selection</h2>
+      <div id="detail-content">
+        <p class="muted">Click a system on the map to view details. Right-click for full info.</p>
+      </div>
+    </section>
+
+  </div>
+</div>
+<script src="/map.js"></script>
+</body>
+</html>
