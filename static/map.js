@@ -652,6 +652,11 @@ function attachDetailHandlers() {
 function beginEdit(el) {
   const key = el.dataset.edit;
   if (!key) return;
+  // Guard against re-entry: clicks inside an already-open editor (e.g. to
+  // reposition the cursor, or on the Save/Cancel buttons) bubble back up to
+  // this same element's click handler. Without this, the re-run would read
+  // el.textContent — now "SaveCancel" — and dump it into the input.
+  if (el.querySelector('.edit-input')) return;
   const multi = el.dataset.multi === '1';
   const current = el.textContent === '(empty)' ? '' : el.textContent;
   el.innerHTML = '';
