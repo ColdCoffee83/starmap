@@ -257,8 +257,8 @@ canvas.addEventListener('contextmenu', e => {
   const sys = findSystemAt(sx, sy);
   if (sys) {
     state.selectedId = sys.id;
-    loadDetail(sys.id);
     draw();
+    openInfoModal(sys.id);
   }
 });
 
@@ -788,6 +788,119 @@ async function deleteMoon() {
   state.detailPlanetId = planetId;
   renderDetail();
 }
+
+// --- Full-info modal ---------------------------------------------------
+// Read-only "what do we know about this system" window (Thomas-style popup),
+// opened by right-clicking a system. Empty fields render as "No data
+// recorded" rather than being hidden, so players can see the gap and the GM
+// knows where to fill in.
+
+const infoModal = document.getElementById('info-modal');
+
+// A value counts as "missing" only when it is null/undefined/blank.
+// Numbers (including 0) are real data.
+function hasData(v) {
+  if (v === null || v === undefined) return false;
+  if (typeof v === 'string') return v.trim() !== '';
+  return true;
+}
+
+function infoRow(label, value) {
+  const v = hasData(value)
+    ? escapeHtml(value)
+    : '<span class="no-data">No data recorded</span>';
+  return `<div class="info-row">
+            <div class="info-label">${escapeHtml(label)}</div>
+            <div class="info-value">${v}</div>
+          </div>`;
+}
+
+function renderFullInfo(sys) {
+  let h = '';
+
+  h += '<div class="info-section">';
+  h += '<h3>System</h3>';
+  h += infoRow('Name', sys.name);
+  h += infoRow('Coordinates (ly)', `${sys.x}, ${sys.y}, ${sys.z}`);
+  h += infoRow('System code', sys.system_code);
+  h += infoRow('Player notes', sys.mouse_over);
+  h += infoRow('GM notes', sys.notes);
+  h += '</div>';
+
+  h += '<div class="info-section"><h3>Stars</h3>';
+  if (!sys.stars.length) {
+    h += '<div class="info-row"><div class="info-value"><span class="no-data">No stars recorded (rogue / starless system?)</span></div></div>';
+  }
+  for (const star of sys.stars) {
+    h += `<h4>${escapeHtml(star.star_class || 'Unclassified star')}</h4>`;
+    h += '<div class="info-sub">';
+    h += infoRow('Class', star.star_class);
+    h += infoRow('Mass', star.mass);
+    h += infoRow('Luminosity', star.luminosity);
+    h += infoRow('Magnetic field', star.magnetic_field);
+    h += infoRow('Flare frequency', star.flare_frequency);
+    h += infoRow('Other', star.extra);
+    h += infoRow('Notes', star.notes);
+
+    const planets = star.planets || [];
+    if (!planets.length) {
+      h += '<div class="info-row"><div class="info-value"><span class="no-data">No bodies recorded</span></div></div>';
+    }
+    for (const p of planets) {
+      h += `<h4>${escapeHtml(p.name || `Body ${p.display_order + 1}`)}</h4>`;
+      h += '<div class="info-sub">';
+      h += infoRow('Orbital distance', p.orbital_distance);
+      h += infoRow('Mass', p.mass);
+      h += infoRow('Radius', p.radius);
+      h += infoRow('Atmosphere', p.atmosphere);
+      h += infoRow('Hydrosphere', p.hydrosphere);
+      h += infoRow('Sophont artifacts', p.sophont_artifacts);
+      h += infoRow('Notes', p.notes);
+
+      const moons = p.moons || [];
+      for (const m of moons) {
+        h += `<h4>Moon: ${escapeHtml(m.name || `Moon ${m.display_order + 1}`)}</h4>`;
+        h += '<div class="info-sub">';
+        h += infoRow('Orbital distance', m.orbital_distance);
+        h += infoRow('Mass', m.mass);
+        h += infoRow('Radius', m.radius);
+        h += infoRow('Atmosphere', m.atmosphere);
+        h += infoRow('Hydrosphere', m.hydrosphere);
+        h += infoRow('Sophont artifacts', m.sophont_artifacts);
+        h += infoRow('Notes', m.notes);
+        h += '</div>';
+      }
+      h += '</div>';
+    }
+    h += '</div>';
+  }
+  h += '</div>';
+
+  return h;
+}
+
+async function openInfoModal(id) {
+  let sys;
+  try {
+    sys = await api('GET', `/api/system/${id}`);
+  } catch (e) { alert(e.message); return; }
+  document.getElementById('info-modal-title').textContent =
+    sys.name || `System #${sys.id}`;
+  document.getElementById('info-modal-body').innerHTML = renderFullInfo(sys);
+  infoModal.classList.remove('hidden');
+}
+
+function closeInfoModal() {
+  infoModal.classList.add('hidden');
+}
+
+document.getElementById('info-modal-close').addEventListener('click', closeInfoModal);
+infoModal.addEventListener('click', e => {
+  if (e.target === infoModal) closeInfoModal(); // click on backdrop
+});
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !infoModal.classList.contains('hidden')) closeInfoModal();
+});
 
 // --- Boot --------------------------------------------------------------
 
